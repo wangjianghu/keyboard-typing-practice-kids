@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>单元测试运行器</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #fff; }
+        .pass { color: #0f0; }
+        .fail { color: #f00; }
+        h2 { border-bottom: 1px solid #444; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>键盘盲打练习 - 测试报告</h1>
+    <div id="test-results"></div>
+
+    <!-- 模拟 DOM 环境 -->
+    <div id="app-container" style="display: none;">
+        <!-- ... 简化的 DOM ... -->
+        <div id="welcome-screen" class="screen"></div>
+        <div id="level-screen" class="screen"></div>
+        <div id="practice-screen" class="screen"></div>
+        <div id="result-screen" class="screen"></div>
+        <div id="level-grid"></div>
+        <div id="text-container"></div>
+        <div id="virtual-keyboard"></div>
+        <div id="progress-bar"></div>
+        <div id="stat-wpm"></div>
+        <div id="stat-acc"></div>
+        <div id="hint-bubble"></div>
+        <div id="result-wpm"></div>
+        <div id="result-acc"></div>
+        <div id="result-stars"></div>
+    </div>
+
+    <!-- 加载源码 -->
+    <script src="../js/logger.js"></script>
+    <script src="../js/store.js"></script>
+    <script src="../js/levels.js"></script>
+    <script src="../js/adaptive.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/ui-levels.js"></script>
+    <script src="../js/ui-text.js"></script>
+    <script src="../js/ui-audio.js"></script>
+    <script src="../js/ui-keyboard.js"></script>
+    <script src="../js/ui-stats.js"></script>
+    <script src="../js/engine.js"></script>
+    <script src="../js/app-flags.js"></script>
+
+    <!-- 加载测试脚本 -->
+    <script src="test_engine.js"></script>
+</body>
+</html>

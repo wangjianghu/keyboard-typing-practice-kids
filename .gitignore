@@ -1,0 +1,19 @@
+# 项目文档（排除在 GitHub 之外）
+需求.md
+原始需求.md
+日志.md
+对话记录.md
+升级文档.md
+部署文档.md
+测试报告.md
+开发计划.md
+系统架构设计.md
+用户手册.md
+docs/
+
+# 系统文件
+.DS_Store
+node_modules/
+.vscode/
+.idea/
+*.log

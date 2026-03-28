@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>键盘盲打练习 - 小朋友专用版</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- 欢迎页 -->
+        <section id="welcome-screen" class="screen active">
+            <div class="welcome-content">
+                <h1>键盘盲打大冒险</h1>
+                <div class="mascot" id="mascot-idle">🦊</div>
+                <div class="welcome-actions">
+                    <button id="btn-start" class="btn primary">开始探险</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据看板页 -->
+        <section id="stats-screen" class="screen hidden">
+            <div class="header">
+                <h2>练习数据看板</h2>
+                <div class="header-actions">
+                    <select id="stats-time-filter" class="stats-filter">
+                        <option value="all">全部时间</option>
+                        <option value="today">今天</option>
+                        <option value="week">最近7天</option>
+                    </select>
+                    <button id="btn-export-csv" class="btn primary">导出 CSV</button>
+                    <button id="btn-export-backup" class="btn secondary">导出备份</button>
+                    <button id="btn-import-backup" class="btn secondary">导入恢复</button>
+                    <input id="input-import-backup" type="file" accept="application/json,.json" style="display:none;" />
+                    <button id="btn-clear-data" class="btn secondary" style="background-color: var(--error-color);">清空数据</button>
+                    <button id="btn-back-from-stats" class="btn secondary">返回关卡</button>
+                </div>
+            </div>
+            <div class="stats-dashboard">
+                <div class="stats-summary">
+                    <div class="stat-card">
+                        <h3>总关卡数</h3>
+                        <p id="dashboard-total-levels">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>已解锁关卡</h3>
+                        <p id="dashboard-unlocked">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>平均准确率</h3>
+                        <p id="dashboard-avg-acc">0%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>总平均速度</h3>
+                        <p><span id="dashboard-avg-wpm">0</span> <span style="font-size:14px">次/分</span></p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>本周回访完成</h3>
+                        <p><span id="dashboard-review-done-week">0</span> <span style="font-size:14px">次</span></p>
+                    </div>
+                </div>
+                <div class="growth-badge-panel">
+                    <div id="growth-summary" class="growth-summary">本周较上周：准确率 +0% ｜ 速度 +0 次/分</div>
+                    <div id="badge-list" class="badge-list"></div>
+                </div>
+                <div id="badge-detail-modal" class="badge-detail-modal hidden">
+                    <div class="badge-detail-card">
+                        <h4 id="badge-detail-title">徽章详情</h4>
+                        <p id="badge-detail-desc">徽章说明</p>
+                        <p id="badge-detail-progress">当前进度：0/0</p>
+                        <button id="btn-badge-detail-close" class="btn secondary">我知道啦</button>
+                    </div>
+                </div>
+                
+                <div class="stats-sections">
+                    <div id="stats-mobile-switcher" class="stats-mobile-switcher hidden">
+                        <button id="btn-stats-tab-history" class="stats-tab-btn active" data-stats-tab="history">关卡历史成绩</button>
+                        <button id="btn-stats-tab-errors" class="stats-tab-btn" data-stats-tab="errors">易错按键排行</button>
+                    </div>
+                    <div id="stats-details-container" class="stats-details-container">
+                        <h3>关卡历史成绩</h3>
+                        <div class="stats-details" id="stats-details-list">
+                            <!-- 详细数据由 JS 生成 -->
+                        </div>
+                    </div>
+                    
+                    <div id="stats-errors-container" class="stats-errors-container">
+                        <div class="stats-header-with-sort">
+                            <h3>易错按键排行榜</h3>
+                            <select id="stats-error-sort" class="stats-filter">
+                                <option value="acc-asc">按正确率 (从低到高)</option>
+                                <option value="acc-desc">按正确率 (从高到低)</option>
+                                <option value="count-desc">按错误次数 (从多到少)</option>
+                                <option value="count-asc">按错误次数 (从少到多)</option>
+                            </select>
+                        </div>
+                        <div class="stats-errors" id="stats-errors-list">
+                            <!-- 易错按键由 JS 生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关卡选择页 -->
+        <section id="level-screen" class="screen hidden">
+            <div class="header">
+                <h2>选择关卡</h2>
+                <div class="header-actions">
+                    <button id="btn-view-stats" class="btn primary" style="font-size: 16px; padding: 10px 20px;">数据看板</button>
+                    <button id="btn-back-welcome" class="btn secondary">返回首页</button>
+                </div>
+            </div>
+            <div id="level-grid" class="level-grid">
+                <!-- 关卡卡片将由 JS 动态生成 -->
+            </div>
+            <div id="level-review-task-panel" class="level-review-task-panel hidden"></div>
+        </section>
+
+        <!-- 练习主页面 -->
+        <section id="practice-screen" class="screen hidden">
+            <div class="practice-header">
+                <div class="btn-group-left">
+                    <button id="btn-back-level" class="btn secondary">放弃</button>
+                </div>
+                <div class="stats">
+                    <span class="stat-item">用时:<strong id="stat-time">0:00</strong></span>
+                    <span class="stat-item">速度:<strong id="stat-wpm">0</strong>次/分钟</span>
+                    <span class="stat-item">准确率:<strong id="stat-acc">100</strong>%</span>
+                </div>
+                <div class="btn-group-right">
+                    <button id="btn-pause" class="btn secondary">暂停 (ESC)</button>
+                    <button id="btn-toggle-sound" class="btn secondary">🔊 音效</button>
+                </div>
+            </div>
+            <div id="goal-tips" class="goal-tips">通关目标：准确率≥85%，速度≥60次/分钟｜满星目标：准确率≥95%，速度≥90次/分钟</div>
+            
+            <div id="segment-feedback" class="segment-feedback hidden"></div>
+            <div class="progress-row">
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <div id="progress-text" class="progress-text">0/60</div>
+            </div>
+
+            <!-- 文本展示区 -->
+            <div class="text-display">
+                <div id="text-container" class="text-container">
+                    <!-- 字符将由 JS 动态生成 -->
+                </div>
+            </div>
+
+            <!-- 虚拟键盘区 -->
+            <div class="keyboard-container">
+                <div id="keyboard-mask" class="keyboard-mask"></div>
+                <!-- 提示气泡固定在键盘左上角，不在字母区内 -->
+                <div id="hint-bubble" class="hint-bubble hidden">试试用左手食指按这个键哦！</div>
+                <div id="virtual-keyboard" class="virtual-keyboard">
+                    <!-- 键盘按键将由 JS 动态生成 -->
+                    
+                    <!-- SVG 虚拟手模型（绝对定位覆盖在键盘上） -->
+                    <div id="virtual-hands" class="virtual-hands">
+                        <!-- 左手 SVG -->
+                        <div class="hand left-hand" id="hand-left">
+                            <svg viewBox="0 0 100 120" width="120" height="150" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M 90,60 C 90,40 75,30 75,30 C 75,15 65,10 65,10 C 65,-5 50,-5 50,-5 C 50,-20 35,-20 35,-20 C 35,-20 20,-10 20,5 L 15,25 C 5,25 -5,40 5,50 L 20,90 C 30,110 50,120 70,120 C 90,120 100,100 90,80 Z" fill="rgba(255, 255, 255, 0.7)" stroke="#666" stroke-width="2"/>
+                                <!-- 手指分界线，示意不同手指 -->
+                                <path d="M 35,-20 L 35,50" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+                                <path d="M 50,-5 L 50,50" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+                                <path d="M 65,10 L 65,50" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+                                <path d="M 75,30 L 75,60" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+                                <text x="40" y="80" font-size="14" fill="#333" font-family="sans-serif" font-weight="bold">左手</text>
+                            </svg>
+                        </div>
+                        
+                        <!-- 右手 SVG -->
+                        <div class="hand right-hand" id="hand-right">
+                            <svg viewBox="0 0 100 120" width="120" height="150" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M 10,60 C 10,40 25,30 25,30 C 25,15 35,10 35,10 C 35,-5 50,-5 50,-5 C 50,-20 65,-20 65,-20 C 65,-20 80,-10 80,5 L 85,25 C 95,25 105,40 95,50 L 80,90 C 70,110 50,120 30,120 C 10,120 0,100 10,80 Z" fill="rgba(255, 255, 255, 0.7)" stroke="#666" stroke-width="2"/>
+                                <!-- 手指分界线 -->
+                                <path d="M 65,-20 L 65,50" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+                                <path d="M 50,-5 L 50,50" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+                                <path d="M 35,10 L 35,50" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+                                <path d="M 25,30 L 25,60" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>
+                                <text x="30" y="80" font-size="14" fill="#333" font-family="sans-serif" font-weight="bold">右手</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 暂停遮罩层 -->
+            <div id="pause-overlay" class="pause-overlay hidden">
+                <div class="pause-content">
+                    <h2>已暂停</h2>
+                    <p>休息一下，准备好再出发！</p>
+                    <button id="btn-resume" class="btn primary">继续练习 (ESC)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 结果页 -->
+        <section id="result-screen" class="screen hidden">
+            <div class="result-card">
+                <h2>太棒了！关卡完成！</h2>
+                <div class="result-stats">
+                    <p>用时: <strong id="result-time">0:00</strong></p>
+                    <p>打字速度: <strong id="result-wpm">0</strong> 次/分钟</p>
+                    <p>准确率: <strong id="result-acc">0</strong>%</p>
+                    <p>获得星级: <strong id="result-stars">⭐</strong></p>
+                    <p id="result-goal-summary" class="result-goal-summary"></p>
+                    <p id="result-encourage" class="result-encourage"></p>
+                </div>
+                <div class="result-actions">
+                    <button id="btn-retry" class="btn secondary">再玩一次</button>
+                    <button id="btn-next" class="btn primary">下一关 (Enter)</button>
+                    <button id="btn-home" class="btn">返回关卡</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 脚本加载顺序非常重要，因为不使用模块化构建 -->
+    <script src="js/logger.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/adaptive.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/exporter.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/ui-levels.js"></script>
+    <script src="js/ui-text.js"></script>
+    <script src="js/ui-audio.js"></script>
+    <script src="js/ui-keyboard.js"></script>
+    <script src="js/ui-stats.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/app-helpers.js"></script>
+    <script src="js/app-practice.js"></script>
+    <script src="js/app-state.js"></script>
+    <script src="js/app-stats.js"></script>
+    <script src="js/app-events.js"></script>
+    <script src="js/app-flags.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
